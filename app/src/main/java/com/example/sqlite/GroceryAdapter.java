@@ -23,22 +23,24 @@ public class GroceryAdapter extends RecyclerView.Adapter<GroceryAdapter.GroceryV
     @NonNull
     @Override
     public GroceryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater=LayoutInflater.from(mContext);
-        View view=inflater.inflate(R.layout.recycler_item,parent,false);
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        View view = inflater.inflate(R.layout.recycler_item, parent, false);
         return new GroceryViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull GroceryViewHolder holder, int position) {
 
-        if (!mCursor.moveToPosition(position)){
+        if (!mCursor.moveToPosition(position)) {
             return;
         }
-        String name=mCursor.getString(mCursor.getColumnIndex(Grocery_Contract.Grocery_Entry.column_name));
-        int amount=mCursor.getInt(mCursor.getColumnIndex(Grocery_Contract.Grocery_Entry.column_amount));
+        String name = mCursor.getString(mCursor.getColumnIndex(Grocery_Contract.Grocery_Entry.column_name));
+        int amount = mCursor.getInt(mCursor.getColumnIndex(Grocery_Contract.Grocery_Entry.column_amount));
+        long id = mCursor.getLong(mCursor.getColumnIndex(Grocery_Contract.Grocery_Entry._ID));
 
-            holder.nameText.setText(name);
-            holder.counttext.setText(String.valueOf(amount));
+        holder.itemView.setTag(id);
+        holder.nameText.setText(name);
+        holder.counttext.setText(String.valueOf(amount));
     }
 
     @Override
@@ -46,13 +48,12 @@ public class GroceryAdapter extends RecyclerView.Adapter<GroceryAdapter.GroceryV
         return mCursor.getCount();
     }
 
-    public void swapCursor(Cursor newCursor)
-    {
-        if (mCursor!=null){
+    public void swapCursor(Cursor newCursor) {
+        if (mCursor != null) {
             mCursor.close();
         }
-        mCursor=newCursor;
-        if (newCursor!=null){
+        mCursor = newCursor;
+        if (newCursor != null) {
             notifyDataSetChanged();
         }
     }
@@ -63,8 +64,8 @@ public class GroceryAdapter extends RecyclerView.Adapter<GroceryAdapter.GroceryV
 
         public GroceryViewHolder(View itemView) {
             super(itemView);
-            nameText=itemView.findViewById(R.id.item_name);
-            counttext=itemView.findViewById(R.id.amount);
+            nameText = itemView.findViewById(R.id.item_name);
+            counttext = itemView.findViewById(R.id.amount);
         }
     }
 }

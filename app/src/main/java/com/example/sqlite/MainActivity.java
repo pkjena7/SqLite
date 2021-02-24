@@ -1,6 +1,8 @@
 package com.example.sqlite;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     int amount = 0;
     private SQLiteDatabase database;
     GroceryAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,10 +33,22 @@ public class MainActivity extends AppCompatActivity {
         GroceryDBHelper dbHelper = new GroceryDBHelper(this);
         database = dbHelper.getWritableDatabase();
 
-        RecyclerView recyclerView =findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter=new GroceryAdapter(this,getAllItems());
+        adapter = new GroceryAdapter(this, getAllItems());
         recyclerView.setAdapter(adapter);
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                removeitem((long) viewHolder.itemView.getTag());
+            }
+        }).attachToRecyclerView(recyclerView);
 
         editText = findViewById(R.id.edit_text);
         textView = findViewById(R.id.amount);
@@ -79,24 +94,30 @@ public class MainActivity extends AppCompatActivity {
         if (editText.getText().toString().trim().length() == 0 || amount == 0) {
             return;
         }
-        String name =editText.getText().toString();
-        ContentValues cv =new ContentValues();
-        cv.put(Grocery_Contract.Grocery_Entry.column_name,name);
-        cv.put(Grocery_Contract.Grocery_Entry.column_amount,amount);
+        String name = editText.getText().toString();
+        ContentValues cv = new ContentValues();
+        cv.put(Grocery_Contract.Grocery_Entry.column_name, name);
+        cv.put(Grocery_Contract.Grocery_Entry.column_amount, amount);
 
-        database.insert(Grocery_Contract.Grocery_Entry.table_name,null,cv);
+        database.insert(Grocery_Contract.Grocery_Entry.table_name, null, cv);
         adapter.swapCursor(getAllItems());
         editText.getText().clear();
 
     }
 
-    private Cursor getAllItems(){
+    private void removeitem(long id) {
+        database.delete(Grocery_Contract.Grocery_Entry.table_name,
+                Grocery_Contract.Grocery_Entry._ID + "=" + id, null);
+        adapter.swapCursor(getAllItems());
+    }
+
+    private Cursor getAllItems() {
         return database.query(Grocery_Contract.Grocery_Entry.table_name,
                 null,
                 null,
                 null,
                 null,
                 null,
-                Grocery_Contract.Grocery_Entry.column_timestamp +"DESC");
+                Grocery_Contract.Grocery_Entry.column_timestamp + " DESC");
     }
 }
